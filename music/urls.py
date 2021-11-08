@@ -1,7 +1,13 @@
-from django.urls import path
-from .views import SongAPIView, MovieAPIView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import SongViewSet, AlbumViewSet, ArtistViewSet
+
+router = DefaultRouter()
+router.register('songs', SongViewSet)
+router.register("albums", AlbumViewSet)
+router.register("artists", ArtistViewSet)
+
 
 urlpatterns = [
-    path('song/', SongAPIView.as_view(), name='song'),
-    path('movie/', MovieAPIView.as_view(), name='movie'),
+    path('', include(router.urls)),
 ]
