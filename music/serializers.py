@@ -18,7 +18,7 @@ class AlbumSerializer(serializers.ModelSerializer):
 class SongSerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
-        fields = ('id', 'title', 'album', 'cover', 'source')
+        fields = ('id', 'title', 'album', 'cover', 'source', 'listened')
 
     def validate_source(self, value):
         if not value.endswith('.mp3'):

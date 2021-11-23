@@ -2,14 +2,32 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import LimitOffsetPagination
-from music.models import Song, Album, Artist
-from music.serializers import SongSerializer, AlbumSerializer, ArtistSerializer
+from rest_framework import status
+from django.db import transaction
+from music.models import Song, Album, Artist, Movie
+from music.serializers import SongSerializer, AlbumSerializer, ArtistSerializer, MovieSerializer
 
 
 class SongViewSet(ModelViewSet):
     queryset = Song.objects.all()
     serializer_class = SongSerializer
     pagination_class = LimitOffsetPagination
+
+    @action(detail=True, methods=['POST'])
+    def listen(self, request, *args, **kwargs):
+        song = self.get_object()
+        with transaction.atomic():
+            song.listened += 1
+            song.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["GET"])
+    def top(self, request, *args, **kwargs):
+        songs = self.get_queryset()
+        songs = songs.order_by('-listened')[:10]
+        serializer = SongSerializer(songs, many=True)
+        return Response(data=serializer.data)
 
 
 class AlbumViewSet(ModelViewSet):
@@ -27,6 +45,15 @@ class ArtistViewSet(ModelViewSet):
         serializer = AlbumSerializer(artist.album_set.all(), many=True)
 
         return Response(serializer.data)
+
+
+class MovieViewSet(ModelViewSet):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+
+
+
+
 
 # class SongAPIView(APIView):
 #     def get(self, request):
